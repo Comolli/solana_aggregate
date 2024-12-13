@@ -12,61 +12,65 @@ option objc_class_prefix = "APIWalletV1";
 
 
 service Wallet {
-  // Get the hd wallet's public key
-  rpc CreateWalletByMnemonic (CreateWalletByMnemonicRequest) returns (CreateWalletByMnemonicResponse){
+  // 创建用户的sol地址
+  rpc CreateAddress(CreateAddressRequest) returns (CreateAddressResponse){
     option (google.api.http) = {
-      post: "/wallet/create/v1"
+      post: "/api/wallet/v1/address"
       body: "*"
     };
-}
-  // 获取用户的sol地址
-  rpc GetWalletAddressByUserId (GetWalletAddressByUserIdRequest) returns (GetWalletAddressByUserIdResponse){
-    option (google.api.http) = {
-      get: "/wallet/address/v1/{user_id}"
-    };
   }
+
   // 转账
-  rpc Transfer2WalletAddress (Transfer2WalletAddressRequest) returns (Transfer2WalletAddressResponse){
+  rpc Transfer(TransferRequest) returns (TransferResponse){
     option (google.api.http) = {
-      post: "/wallet/transfer/v1"
+      post: "/api/wallet/v1/transfer"
       body: "*"
     };
   }
-  
 }
 
-message Transfer2WalletAddressRequest {
+message CreateAddressRequest {
   // 用户id
-  uint64 user_id = 1 [(validate.rules).uint64 = {gt:0,ignore_empty: false} ];
-  // 金额
-  float amount = 2 [(validate.rules).float = {gt:0,ignore_empty: false}];
-  // 目标钱包地址
-  string receiver_wallet_address = 3  [(validate.rules).string = {min_len: 1}];
+  uint64 user_id = 1 [(validate.rules).uint64 = {gt:0,ignore_empty: false}];
 }
 
-message Transfer2WalletAddressResponse {
-  // 交易签名
-  string transaction_signature = 1;
-}
-
-message GetWalletAddressByUserIdRequest {
-  // 用户id
-    uint64 user_id = 1 [(validate.rules).uint64 = {gt:0,ignore_empty: false}];
-}
-
-message GetWalletAddressByUserIdResponse {
+message CreateAddressResponse {
   // 钱包地址
-    string wallet_address = 1;
-}
- 
-message CreateWalletByMnemonicRequest {
-  // 助词
-  repeated string mnemonic = 1 ;
+  string address = 1;
 }
 
-message CreateWalletByMnemonicResponse {
-  // 私钥
-  string private_key = 1;
-  // 公钥
-  string public_key = 2;
+message TransferRequest {
+  // token 名字
+  string token = 1 [(validate.rules).string = {min_len: 1}];
+  // 目标钱包地址
+  string dst_address = 2  [(validate.rules).string = {min_len: 1}];
+  // 金额
+  uint64 amount = 3 [(validate.rules).uint64 = {gt:0,ignore_empty: false}];
+  // 请求id, 作用是去重, 防止重复请求
+  string request_id = 4 [(validate.rules).string = {min_len: 1}];
+}
+
+message TransferResponse {
+  // 交易hash
+  string hash = 1;
+}
+
+// 转账回调
+message TransferCallback {
+  // 请求id
+  string request_id = 1;
+  // 交易hash
+  string hash = 2;
+}
+
+// 充值回调
+message DepositCallback {
+  // token 名字
+  string token = 1;
+  // 钱包地址
+  string address = 2;
+  // 金额
+  uint64 amount = 3;
+  // 交易hash
+  string hash = 4;
 }
