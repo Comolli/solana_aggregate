@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package wallet.v1;
+
+import "google/api/annotations.proto";
+
+import "validate/validate.proto";
+option go_package = "solana_aggregate/api/wallet/v1;v1";
+option java_multiple_files = true;
+option java_package = "wallet.v1";
+option objc_class_prefix = "APIWalletV1";
+
+
+service Wallet {
+  // Get the hd wallet's public key
+  rpc CreateWalletByMnemonic (CreateWalletByMnemonicRequest) returns (CreateWalletByMnemonicResponse){
+    option (google.api.http) = {
+      post: "/wallet/create/v1"
+      body: "*"
+    };
+}
+  // 获取用户的sol地址
+  rpc GetWalletAddressByUserId (GetWalletAddressByUserIdRequest) returns (GetWalletAddressByUserIdResponse){
+    option (google.api.http) = {
+      get: "/wallet/address/v1/{user_id}"
+    };
+  }
+  // 转账
+  rpc Transfer2WalletAddress (Transfer2WalletAddressRequest) returns (Transfer2WalletAddressResponse){
+    option (google.api.http) = {
+      post: "/wallet/transfer/v1"
+      body: "*"
+    };
+  }
+  
+}
+
+message Transfer2WalletAddressRequest {
+  // 用户id
+  uint64 user_id = 1 [(validate.rules).uint64 = {gt:0,ignore_empty: false} ];
+  // 金额
+  float amount = 2 [(validate.rules).float = {gt:0,ignore_empty: false}];
+  // 目标钱包地址
+  string receiver_wallet_address = 3  [(validate.rules).string = {min_len: 1}];
+}
+
+message Transfer2WalletAddressResponse {
+  // 交易签名
+  string transaction_signature = 1;
+}
+
+message GetWalletAddressByUserIdRequest {
+  // 用户id
+    uint64 user_id = 1 [(validate.rules).uint64 = {gt:0,ignore_empty: false}];
+}
+
+message GetWalletAddressByUserIdResponse {
+  // 钱包地址
+    string wallet_address = 1;
+}
+ 
+message CreateWalletByMnemonicRequest {
+  // 助词
+  repeated string mnemonic = 1 ;
+}
+
+message CreateWalletByMnemonicResponse {
+  // 私钥
+  string private_key = 1;
+  // 公钥
+  string public_key = 2;
+}

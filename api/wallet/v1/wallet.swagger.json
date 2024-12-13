@@ -1,0 +1,208 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "api/wallet/v1/wallet.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "Wallet"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/wallet/address/v1/{user_id}": {
+      "get": {
+        "operationId": "Wallet_GetWalletAddressByUserId",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetWalletAddressByUserIdResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "user_id",
+            "description": "用户id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "Wallet"
+        ]
+      }
+    },
+    "/wallet/create/v1": {
+      "post": {
+        "operationId": "Wallet_CreateWalletByMnemonic",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CreateWalletByMnemonicResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1CreateWalletByMnemonicRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Wallet"
+        ]
+      }
+    },
+    "/wallet/transfer/v1": {
+      "post": {
+        "operationId": "Wallet_Transfer2WalletAddress",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Transfer2WalletAddressResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Transfer2WalletAddressRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Wallet"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1CreateWalletByMnemonicRequest": {
+      "type": "object",
+      "properties": {
+        "mnemonic": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "助词"
+        }
+      }
+    },
+    "v1CreateWalletByMnemonicResponse": {
+      "type": "object",
+      "properties": {
+        "private_key": {
+          "type": "string",
+          "title": "私钥"
+        },
+        "public_key": {
+          "type": "string",
+          "title": "公钥"
+        }
+      }
+    },
+    "v1GetWalletAddressByUserIdResponse": {
+      "type": "object",
+      "properties": {
+        "wallet_address": {
+          "type": "string",
+          "title": "钱包地址"
+        }
+      }
+    },
+    "v1Transfer2WalletAddressRequest": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "用户id"
+        },
+        "amount": {
+          "type": "number",
+          "format": "float",
+          "title": "金额"
+        },
+        "receiver_wallet_address": {
+          "type": "string",
+          "title": "目标钱包地址"
+        }
+      }
+    },
+    "v1Transfer2WalletAddressResponse": {
+      "type": "object",
+      "properties": {
+        "transaction_signature": {
+          "type": "string",
+          "title": "交易签名"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,176 @@
+syntax = "proto3";
+package kratos.api;
+
+option go_package = "solana_aggregate/internal/conf;conf";
+
+import "google/protobuf/duration.proto";
+
+message Bootstrap {
+  Server server = 1;
+  Data data = 2;
+}
+
+
+message Server {
+  message HTTP {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+  }
+  message GRPC {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+  }
+  message BizTreeService{
+    string addr = 1;
+    google.protobuf.Duration timeout = 2;
+  }
+  message ExamService{
+    string addr = 1;
+    google.protobuf.Duration timeout = 2; 
+  }
+  message ResourceSrv {
+    string addr = 1;
+    google.protobuf.Duration timeout = 2;
+  }
+  message SolEndpoint{
+      string endpoint = 1;
+  }
+
+  HTTP http = 1;
+  GRPC grpc = 2;
+  BizTreeService biz_tree_service = 3;
+  ExamService exam_service = 4;
+  ResourceSrv resource_srv = 5;
+  SolEndpoint sol_endpoint = 6;
+}
+
+message Data {
+  message Database {
+    string driver = 1;
+    string user = 2;
+    string pwd = 3;
+    string uri= 4;
+    string network_type = 5;
+    string database = 6;
+    string protocol = 7;
+    string database1 = 8;
+    string wcg_database = 9;
+    string client_crt = 10;
+    string client_key = 11;
+    string ca_crt = 12;
+  }
+  message SubjectNetworkMysql {
+    string driver = 1;
+    string user = 2;
+    string pwd = 3;
+    string uri= 4;
+    string network_type = 5;
+    string database = 6;
+    string protocol = 7;
+    string client_crt = 8;
+    string client_key = 9;
+    string ca_crt = 10;
+  }
+  message Redis {
+    string addr = 1;
+    int32 database = 2;
+    string pwd = 3;
+    google.protobuf.Duration channel_healthy_check_interval = 4;
+    google.protobuf.Duration read_timeout = 5;
+    google.protobuf.Duration write_timeout = 6;
+    int32 pool_size = 7;
+    string client_crt = 8;
+    string client_key = 9;
+    string ca_crt = 10;
+    string ssl_model = 11;
+  }
+  message OSS {
+    message Minio {
+      string endpoint = 1;
+      string access_key = 2;
+      string secret_key = 3;
+      string bucket = 4;
+      string location = 5;
+      bool use_ssl = 6;
+      string certfile_path = 7;
+      string keyfile_path = 8;
+    }
+    message AliYunOss{
+      string endpoint = 1;
+      string access_key = 2;
+      string secret_key = 3;
+      string bucket = 4;
+      string folder = 5;
+    }
+    Minio minio = 1;
+    AliYunOss AliOss = 2;
+  }
+  message Mongo{
+    string addr = 1;
+    string user = 2;
+    string pwd = 3;
+    int64 timeout = 4;
+    string clean_data_question = 5;
+    string platform_data_question = 6;
+    string teach_assist = 7;
+    string operation = 8;
+    string client_crt = 9;
+    string client_key = 10;
+    string ca_crt = 11;
+    string ssl_model = 12;
+  }
+  message SMS{
+    message AliYunSMS{
+      string region_id = 1;
+      string access_key_id = 2;
+      string access_key_secrect = 3;
+      Template_param SendVerifyCode = 4;
+      Template_param SendCommonMsg = 5;
+    }
+    message Template_param{
+      string sign_name = 1;
+      string template_code = 2;
+      string template_param = 3;
+    }
+    AliYunSMS AliYunSms = 1;
+    Template_param SendVerifyCode = 2;
+    Template_param SendCommonMsg = 3;
+  }
+  message Kafka{
+    string addr1 = 1;
+  }
+  message Ai{
+    string addr = 1;
+    int64 timeout = 2;
+  }
+  message Teacher{
+    string addr = 1;
+    int64 timeout = 2;
+  }
+  message Mqtt{
+    string broker  = 1;
+    string client_id  = 2;
+    string user = 3;
+    string pwd = 4;
+  }
+  message MqttWs{
+    string broker = 1;
+    string client_id = 2;
+    string user = 3;
+    string pwd = 4; 
+  }
+  Database database = 1;
+  Redis redis = 2;
+  OSS oss = 3;
+  Mongo mongo = 4;
+  SMS sms = 5;
+  SubjectNetworkMysql subject_network_mysql = 6;
+  Kafka kafka = 7;
+  Ai ai = 8;
+  Teacher teacher = 9;
+  Mqtt mqtt = 10; 
+  MqttWs mqtt_ws = 11;
+  Redis auth_redis = 12;
+} 

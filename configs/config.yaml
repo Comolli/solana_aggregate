@@ -1,0 +1,24 @@
+server:
+  name: ponylearn-prepare-lessons
+  env: develop
+  http:
+    addr: 0.0.0.0:8015
+    timeout: 100s
+  grpc:
+    addr: 0.0.0.0:9915
+    timeout: 100s
+  sol_endpoint:
+    endpoint: "https://api.devnet.solana.com"
+data:
+  database:
+    driver: mysql
+    user: root
+    pwd: xjf_dev_123456_...
+    uri: 120.79.179.187:3306
+    protocol: tcp
+    database: teacher_system_test
+    database1: crawl_data
+    wcg_database: knowledge
+    client_crt: "../../cert/dev/client.crt"
+    client_key: "../../cert/dev/client.txt"
+    ca_crt: "../../cert/dev/ca.crt"
