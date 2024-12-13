@@ -19,93 +19,69 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
-const OperationWalletCreateWalletByMnemonic = "/wallet.v1.Wallet/CreateWalletByMnemonic"
-const OperationWalletGetWalletAddressByUserId = "/wallet.v1.Wallet/GetWalletAddressByUserId"
-const OperationWalletTransfer2WalletAddress = "/wallet.v1.Wallet/Transfer2WalletAddress"
+const OperationWalletCreateAddress = "/wallet.v1.Wallet/CreateAddress"
+const OperationWalletTransfer = "/wallet.v1.Wallet/Transfer"
 
 type WalletHTTPServer interface {
-	CreateWalletByMnemonic(context.Context, *CreateWalletByMnemonicRequest) (*CreateWalletByMnemonicResponse, error)
-	GetWalletAddressByUserId(context.Context, *GetWalletAddressByUserIdRequest) (*GetWalletAddressByUserIdResponse, error)
-	Transfer2WalletAddress(context.Context, *Transfer2WalletAddressRequest) (*Transfer2WalletAddressResponse, error)
+	// CreateAddress 创建用户的sol地址
+	CreateAddress(context.Context, *CreateAddressRequest) (*CreateAddressResponse, error)
+	// Transfer 转账
+	Transfer(context.Context, *TransferRequest) (*TransferResponse, error)
 }
 
 func RegisterWalletHTTPServer(s *http.Server, srv WalletHTTPServer) {
 	r := s.Route("/")
-	r.POST("/wallet/create/v1", _Wallet_CreateWalletByMnemonic0_HTTP_Handler(srv))
-	r.GET("/wallet/address/v1/{user_id}", _Wallet_GetWalletAddressByUserId0_HTTP_Handler(srv))
-	r.POST("/wallet/transfer/v1", _Wallet_Transfer2WalletAddress0_HTTP_Handler(srv))
+	r.POST("/api/wallet/v1/address", _Wallet_CreateAddress0_HTTP_Handler(srv))
+	r.POST("/api/wallet/v1/transfer", _Wallet_Transfer0_HTTP_Handler(srv))
 }
 
-func _Wallet_CreateWalletByMnemonic0_HTTP_Handler(srv WalletHTTPServer) func(ctx http.Context) error {
+func _Wallet_CreateAddress0_HTTP_Handler(srv WalletHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in CreateWalletByMnemonicRequest
+		var in CreateAddressRequest
 		if err := ctx.Bind(&in); err != nil {
 			return err
 		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationWalletCreateWalletByMnemonic)
+		http.SetOperation(ctx, OperationWalletCreateAddress)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.CreateWalletByMnemonic(ctx, req.(*CreateWalletByMnemonicRequest))
+			return srv.CreateAddress(ctx, req.(*CreateAddressRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
 			return err
 		}
-		reply := out.(*CreateWalletByMnemonicResponse)
+		reply := out.(*CreateAddressResponse)
 		return ctx.Result(200, reply)
 	}
 }
 
-func _Wallet_GetWalletAddressByUserId0_HTTP_Handler(srv WalletHTTPServer) func(ctx http.Context) error {
+func _Wallet_Transfer0_HTTP_Handler(srv WalletHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in GetWalletAddressByUserIdRequest
-		if err := ctx.BindQuery(&in); err != nil {
-			return err
-		}
-		if err := ctx.BindVars(&in); err != nil {
-			return err
-		}
-		http.SetOperation(ctx, OperationWalletGetWalletAddressByUserId)
-		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.GetWalletAddressByUserId(ctx, req.(*GetWalletAddressByUserIdRequest))
-		})
-		out, err := h(ctx, &in)
-		if err != nil {
-			return err
-		}
-		reply := out.(*GetWalletAddressByUserIdResponse)
-		return ctx.Result(200, reply)
-	}
-}
-
-func _Wallet_Transfer2WalletAddress0_HTTP_Handler(srv WalletHTTPServer) func(ctx http.Context) error {
-	return func(ctx http.Context) error {
-		var in Transfer2WalletAddressRequest
+		var in TransferRequest
 		if err := ctx.Bind(&in); err != nil {
 			return err
 		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationWalletTransfer2WalletAddress)
+		http.SetOperation(ctx, OperationWalletTransfer)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.Transfer2WalletAddress(ctx, req.(*Transfer2WalletAddressRequest))
+			return srv.Transfer(ctx, req.(*TransferRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
 			return err
 		}
-		reply := out.(*Transfer2WalletAddressResponse)
+		reply := out.(*TransferResponse)
 		return ctx.Result(200, reply)
 	}
 }
 
 type WalletHTTPClient interface {
-	CreateWalletByMnemonic(ctx context.Context, req *CreateWalletByMnemonicRequest, opts ...http.CallOption) (rsp *CreateWalletByMnemonicResponse, err error)
-	GetWalletAddressByUserId(ctx context.Context, req *GetWalletAddressByUserIdRequest, opts ...http.CallOption) (rsp *GetWalletAddressByUserIdResponse, err error)
-	Transfer2WalletAddress(ctx context.Context, req *Transfer2WalletAddressRequest, opts ...http.CallOption) (rsp *Transfer2WalletAddressResponse, err error)
+	CreateAddress(ctx context.Context, req *CreateAddressRequest, opts ...http.CallOption) (rsp *CreateAddressResponse, err error)
+	Transfer(ctx context.Context, req *TransferRequest, opts ...http.CallOption) (rsp *TransferResponse, err error)
 }
 
 type WalletHTTPClientImpl struct {
@@ -116,11 +92,11 @@ func NewWalletHTTPClient(client *http.Client) WalletHTTPClient {
 	return &WalletHTTPClientImpl{client}
 }
 
-func (c *WalletHTTPClientImpl) CreateWalletByMnemonic(ctx context.Context, in *CreateWalletByMnemonicRequest, opts ...http.CallOption) (*CreateWalletByMnemonicResponse, error) {
-	var out CreateWalletByMnemonicResponse
-	pattern := "/wallet/create/v1"
+func (c *WalletHTTPClientImpl) CreateAddress(ctx context.Context, in *CreateAddressRequest, opts ...http.CallOption) (*CreateAddressResponse, error) {
+	var out CreateAddressResponse
+	pattern := "/api/wallet/v1/address"
 	path := binding.EncodeURL(pattern, in, false)
-	opts = append(opts, http.Operation(OperationWalletCreateWalletByMnemonic))
+	opts = append(opts, http.Operation(OperationWalletCreateAddress))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
@@ -129,24 +105,11 @@ func (c *WalletHTTPClientImpl) CreateWalletByMnemonic(ctx context.Context, in *C
 	return &out, nil
 }
 
-func (c *WalletHTTPClientImpl) GetWalletAddressByUserId(ctx context.Context, in *GetWalletAddressByUserIdRequest, opts ...http.CallOption) (*GetWalletAddressByUserIdResponse, error) {
-	var out GetWalletAddressByUserIdResponse
-	pattern := "/wallet/address/v1/{user_id}"
-	path := binding.EncodeURL(pattern, in, true)
-	opts = append(opts, http.Operation(OperationWalletGetWalletAddressByUserId))
-	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &out, nil
-}
-
-func (c *WalletHTTPClientImpl) Transfer2WalletAddress(ctx context.Context, in *Transfer2WalletAddressRequest, opts ...http.CallOption) (*Transfer2WalletAddressResponse, error) {
-	var out Transfer2WalletAddressResponse
-	pattern := "/wallet/transfer/v1"
+func (c *WalletHTTPClientImpl) Transfer(ctx context.Context, in *TransferRequest, opts ...http.CallOption) (*TransferResponse, error) {
+	var out TransferResponse
+	pattern := "/api/wallet/v1/transfer"
 	path := binding.EncodeURL(pattern, in, false)
-	opts = append(opts, http.Operation(OperationWalletTransfer2WalletAddress))
+	opts = append(opts, http.Operation(OperationWalletTransfer))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {

@@ -19,18 +19,18 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Wallet_CreateWalletByMnemonic_FullMethodName   = "/wallet.v1.Wallet/CreateWalletByMnemonic"
-	Wallet_GetWalletAddressByUserId_FullMethodName = "/wallet.v1.Wallet/GetWalletAddressByUserId"
-	Wallet_Transfer2WalletAddress_FullMethodName   = "/wallet.v1.Wallet/Transfer2WalletAddress"
+	Wallet_CreateAddress_FullMethodName = "/wallet.v1.Wallet/CreateAddress"
+	Wallet_Transfer_FullMethodName      = "/wallet.v1.Wallet/Transfer"
 )
 
 // WalletClient is the client API for Wallet service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type WalletClient interface {
-	CreateWalletByMnemonic(ctx context.Context, in *CreateWalletByMnemonicRequest, opts ...grpc.CallOption) (*CreateWalletByMnemonicResponse, error)
-	GetWalletAddressByUserId(ctx context.Context, in *GetWalletAddressByUserIdRequest, opts ...grpc.CallOption) (*GetWalletAddressByUserIdResponse, error)
-	Transfer2WalletAddress(ctx context.Context, in *Transfer2WalletAddressRequest, opts ...grpc.CallOption) (*Transfer2WalletAddressResponse, error)
+	// 创建用户的sol地址
+	CreateAddress(ctx context.Context, in *CreateAddressRequest, opts ...grpc.CallOption) (*CreateAddressResponse, error)
+	// 转账
+	Transfer(ctx context.Context, in *TransferRequest, opts ...grpc.CallOption) (*TransferResponse, error)
 }
 
 type walletClient struct {
@@ -41,30 +41,20 @@ func NewWalletClient(cc grpc.ClientConnInterface) WalletClient {
 	return &walletClient{cc}
 }
 
-func (c *walletClient) CreateWalletByMnemonic(ctx context.Context, in *CreateWalletByMnemonicRequest, opts ...grpc.CallOption) (*CreateWalletByMnemonicResponse, error) {
+func (c *walletClient) CreateAddress(ctx context.Context, in *CreateAddressRequest, opts ...grpc.CallOption) (*CreateAddressResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateWalletByMnemonicResponse)
-	err := c.cc.Invoke(ctx, Wallet_CreateWalletByMnemonic_FullMethodName, in, out, cOpts...)
+	out := new(CreateAddressResponse)
+	err := c.cc.Invoke(ctx, Wallet_CreateAddress_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *walletClient) GetWalletAddressByUserId(ctx context.Context, in *GetWalletAddressByUserIdRequest, opts ...grpc.CallOption) (*GetWalletAddressByUserIdResponse, error) {
+func (c *walletClient) Transfer(ctx context.Context, in *TransferRequest, opts ...grpc.CallOption) (*TransferResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetWalletAddressByUserIdResponse)
-	err := c.cc.Invoke(ctx, Wallet_GetWalletAddressByUserId_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *walletClient) Transfer2WalletAddress(ctx context.Context, in *Transfer2WalletAddressRequest, opts ...grpc.CallOption) (*Transfer2WalletAddressResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Transfer2WalletAddressResponse)
-	err := c.cc.Invoke(ctx, Wallet_Transfer2WalletAddress_FullMethodName, in, out, cOpts...)
+	out := new(TransferResponse)
+	err := c.cc.Invoke(ctx, Wallet_Transfer_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -75,9 +65,10 @@ func (c *walletClient) Transfer2WalletAddress(ctx context.Context, in *Transfer2
 // All implementations must embed UnimplementedWalletServer
 // for forward compatibility.
 type WalletServer interface {
-	CreateWalletByMnemonic(context.Context, *CreateWalletByMnemonicRequest) (*CreateWalletByMnemonicResponse, error)
-	GetWalletAddressByUserId(context.Context, *GetWalletAddressByUserIdRequest) (*GetWalletAddressByUserIdResponse, error)
-	Transfer2WalletAddress(context.Context, *Transfer2WalletAddressRequest) (*Transfer2WalletAddressResponse, error)
+	// 创建用户的sol地址
+	CreateAddress(context.Context, *CreateAddressRequest) (*CreateAddressResponse, error)
+	// 转账
+	Transfer(context.Context, *TransferRequest) (*TransferResponse, error)
 	mustEmbedUnimplementedWalletServer()
 }
 
@@ -88,14 +79,11 @@ type WalletServer interface {
 // pointer dereference when methods are called.
 type UnimplementedWalletServer struct{}
 
-func (UnimplementedWalletServer) CreateWalletByMnemonic(context.Context, *CreateWalletByMnemonicRequest) (*CreateWalletByMnemonicResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateWalletByMnemonic not implemented")
+func (UnimplementedWalletServer) CreateAddress(context.Context, *CreateAddressRequest) (*CreateAddressResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateAddress not implemented")
 }
-func (UnimplementedWalletServer) GetWalletAddressByUserId(context.Context, *GetWalletAddressByUserIdRequest) (*GetWalletAddressByUserIdResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetWalletAddressByUserId not implemented")
-}
-func (UnimplementedWalletServer) Transfer2WalletAddress(context.Context, *Transfer2WalletAddressRequest) (*Transfer2WalletAddressResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Transfer2WalletAddress not implemented")
+func (UnimplementedWalletServer) Transfer(context.Context, *TransferRequest) (*TransferResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Transfer not implemented")
 }
 func (UnimplementedWalletServer) mustEmbedUnimplementedWalletServer() {}
 func (UnimplementedWalletServer) testEmbeddedByValue()                {}
@@ -118,56 +106,38 @@ func RegisterWalletServer(s grpc.ServiceRegistrar, srv WalletServer) {
 	s.RegisterService(&Wallet_ServiceDesc, srv)
 }
 
-func _Wallet_CreateWalletByMnemonic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateWalletByMnemonicRequest)
+func _Wallet_CreateAddress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateAddressRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WalletServer).CreateWalletByMnemonic(ctx, in)
+		return srv.(WalletServer).CreateAddress(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Wallet_CreateWalletByMnemonic_FullMethodName,
+		FullMethod: Wallet_CreateAddress_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WalletServer).CreateWalletByMnemonic(ctx, req.(*CreateWalletByMnemonicRequest))
+		return srv.(WalletServer).CreateAddress(ctx, req.(*CreateAddressRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Wallet_GetWalletAddressByUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetWalletAddressByUserIdRequest)
+func _Wallet_Transfer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TransferRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WalletServer).GetWalletAddressByUserId(ctx, in)
+		return srv.(WalletServer).Transfer(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Wallet_GetWalletAddressByUserId_FullMethodName,
+		FullMethod: Wallet_Transfer_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WalletServer).GetWalletAddressByUserId(ctx, req.(*GetWalletAddressByUserIdRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Wallet_Transfer2WalletAddress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Transfer2WalletAddressRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(WalletServer).Transfer2WalletAddress(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Wallet_Transfer2WalletAddress_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WalletServer).Transfer2WalletAddress(ctx, req.(*Transfer2WalletAddressRequest))
+		return srv.(WalletServer).Transfer(ctx, req.(*TransferRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -180,16 +150,12 @@ var Wallet_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*WalletServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "CreateWalletByMnemonic",
-			Handler:    _Wallet_CreateWalletByMnemonic_Handler,
+			MethodName: "CreateAddress",
+			Handler:    _Wallet_CreateAddress_Handler,
 		},
 		{
-			MethodName: "GetWalletAddressByUserId",
-			Handler:    _Wallet_GetWalletAddressByUserId_Handler,
-		},
-		{
-			MethodName: "Transfer2WalletAddress",
-			Handler:    _Wallet_Transfer2WalletAddress_Handler,
+			MethodName: "Transfer",
+			Handler:    _Wallet_Transfer_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -26,7 +26,8 @@ import (
 func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
 	db := data.NewMysql(confData, logger)
 	client := data.NewSolRpcCli(confServer, logger)
-	dataData, cleanup, err := data.NewData(logger, db, client)
+	string2 := data.NewPrivateKey(confServer, logger)
+	dataData, cleanup, err := data.NewData(logger, db, client, string2)
 	if err != nil {
 		return nil, nil, err
 	}

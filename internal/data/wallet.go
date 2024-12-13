@@ -9,9 +9,10 @@ import (
 )
 
 type WalletRepo struct {
-	db        *gorm.DB
-	log       *log.Helper
-	solRpcCli *rpc.Client
+	db         *gorm.DB
+	log        *log.Helper
+	solRpcCli  *rpc.Client
+	privateKey string
 }
 
 func NewWalletRepo(data *Data, logger log.Logger) biz.WalletRepo {
@@ -28,4 +29,8 @@ func (r *WalletRepo) GetMysqlDb() *gorm.DB {
 
 func (r *WalletRepo) GetRpcSolCli() *rpc.Client {
 	return r.solRpcCli
+}
+
+func (r *WalletRepo) GetPrivateKey() string {
+	return r.privateKey
 }

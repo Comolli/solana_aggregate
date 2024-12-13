@@ -6,41 +6,17 @@ info:
     title: Wallet API
     version: 0.0.1
 paths:
-    /wallet/address/v1/{userId}:
-        get:
-            tags:
-                - Wallet
-            operationId: Wallet_GetWalletAddressByUserId
-            parameters:
-                - name: userId
-                  in: path
-                  description: 用户id
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/GetWalletAddressByUserIdResponse'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /wallet/create/v1:
+    /api/wallet/v1/address:
         post:
             tags:
                 - Wallet
-            operationId: Wallet_CreateWalletByMnemonic
+            description: 创建用户的sol地址
+            operationId: Wallet_CreateAddress
             requestBody:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/CreateWalletByMnemonicRequest'
+                            $ref: '#/components/schemas/CreateAddressRequest'
                 required: true
             responses:
                 "200":
@@ -48,23 +24,24 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/CreateWalletByMnemonicResponse'
+                                $ref: '#/components/schemas/CreateAddressResponse'
                 default:
                     description: Default error response
                     content:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /wallet/transfer/v1:
+    /api/wallet/v1/transfer:
         post:
             tags:
                 - Wallet
-            operationId: Wallet_Transfer2WalletAddress
+            description: 转账
+            operationId: Wallet_Transfer
             requestBody:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/Transfer2WalletAddressRequest'
+                            $ref: '#/components/schemas/TransferRequest'
                 required: true
             responses:
                 "200":
@@ -72,7 +49,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/Transfer2WalletAddressResponse'
+                                $ref: '#/components/schemas/TransferResponse'
                 default:
                     description: Default error response
                     content:
@@ -81,27 +58,16 @@ paths:
                                 $ref: '#/components/schemas/Status'
 components:
     schemas:
-        CreateWalletByMnemonicRequest:
+        CreateAddressRequest:
             type: object
             properties:
-                mnemonic:
-                    type: array
-                    items:
-                        type: string
-                    description: 助词
-        CreateWalletByMnemonicResponse:
-            type: object
-            properties:
-                privateKey:
+                userId:
                     type: string
-                    description: 私钥
-                publicKey:
-                    type: string
-                    description: 公钥
-        GetWalletAddressByUserIdResponse:
+                    description: 用户id
+        CreateAddressResponse:
             type: object
             properties:
-                walletAddress:
+                address:
                     type: string
                     description: 钱包地址
         GoogleProtobufAny:
@@ -128,24 +94,26 @@ components:
                         $ref: '#/components/schemas/GoogleProtobufAny'
                     description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
             description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
-        Transfer2WalletAddressRequest:
+        TransferRequest:
             type: object
             properties:
-                userId:
+                token:
                     type: string
-                    description: 用户id
-                amount:
-                    type: number
-                    description: 金额
-                    format: float
-                receiverWalletAddress:
+                    description: token 名字
+                dstAddress:
                     type: string
                     description: 目标钱包地址
-        Transfer2WalletAddressResponse:
+                amount:
+                    type: string
+                    description: 金额
+                requestId:
+                    type: string
+                    description: 请求id, 作用是去重, 防止重复请求
+        TransferResponse:
             type: object
             properties:
-                transactionSignature:
+                hash:
                     type: string
-                    description: 交易签名
+                    description: 交易hash
 tags:
     - name: Wallet

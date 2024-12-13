@@ -35,22 +35,22 @@ var (
 	_ = sort.Sort
 )
 
-// Validate checks the field values on Transfer2WalletAddressRequest with the
-// rules defined in the proto definition for this message. If any rules are
+// Validate checks the field values on CreateAddressRequest with the rules
+// defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *Transfer2WalletAddressRequest) Validate() error {
+func (m *CreateAddressRequest) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on Transfer2WalletAddressRequest with
-// the rules defined in the proto definition for this message. If any rules
-// are violated, the result is a list of violation errors wrapped in
-// Transfer2WalletAddressRequestMultiError, or nil if none found.
-func (m *Transfer2WalletAddressRequest) ValidateAll() error {
+// ValidateAll checks the field values on CreateAddressRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CreateAddressRequestMultiError, or nil if none found.
+func (m *CreateAddressRequest) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *Transfer2WalletAddressRequest) validate(all bool) error {
+func (m *CreateAddressRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -58,7 +58,7 @@ func (m *Transfer2WalletAddressRequest) validate(all bool) error {
 	var errors []error
 
 	if m.GetUserId() <= 0 {
-		err := Transfer2WalletAddressRequestValidationError{
+		err := CreateAddressRequestValidationError{
 			field:  "UserId",
 			reason: "value must be greater than 0",
 		}
@@ -68,8 +68,236 @@ func (m *Transfer2WalletAddressRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if len(errors) > 0 {
+		return CreateAddressRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// CreateAddressRequestMultiError is an error wrapping multiple validation
+// errors returned by CreateAddressRequest.ValidateAll() if the designated
+// constraints aren't met.
+type CreateAddressRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CreateAddressRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CreateAddressRequestMultiError) AllErrors() []error { return m }
+
+// CreateAddressRequestValidationError is the validation error returned by
+// CreateAddressRequest.Validate if the designated constraints aren't met.
+type CreateAddressRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CreateAddressRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CreateAddressRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CreateAddressRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CreateAddressRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CreateAddressRequestValidationError) ErrorName() string {
+	return "CreateAddressRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CreateAddressRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCreateAddressRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CreateAddressRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CreateAddressRequestValidationError{}
+
+// Validate checks the field values on CreateAddressResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CreateAddressResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CreateAddressResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CreateAddressResponseMultiError, or nil if none found.
+func (m *CreateAddressResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CreateAddressResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Address
+
+	if len(errors) > 0 {
+		return CreateAddressResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// CreateAddressResponseMultiError is an error wrapping multiple validation
+// errors returned by CreateAddressResponse.ValidateAll() if the designated
+// constraints aren't met.
+type CreateAddressResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CreateAddressResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CreateAddressResponseMultiError) AllErrors() []error { return m }
+
+// CreateAddressResponseValidationError is the validation error returned by
+// CreateAddressResponse.Validate if the designated constraints aren't met.
+type CreateAddressResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CreateAddressResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CreateAddressResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CreateAddressResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CreateAddressResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CreateAddressResponseValidationError) ErrorName() string {
+	return "CreateAddressResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CreateAddressResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCreateAddressResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CreateAddressResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CreateAddressResponseValidationError{}
+
+// Validate checks the field values on TransferRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *TransferRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on TransferRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// TransferRequestMultiError, or nil if none found.
+func (m *TransferRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *TransferRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetToken()) < 1 {
+		err := TransferRequestValidationError{
+			field:  "Token",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetDstAddress()) < 1 {
+		err := TransferRequestValidationError{
+			field:  "DstAddress",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if m.GetAmount() <= 0 {
-		err := Transfer2WalletAddressRequestValidationError{
+		err := TransferRequestValidationError{
 			field:  "Amount",
 			reason: "value must be greater than 0",
 		}
@@ -79,9 +307,9 @@ func (m *Transfer2WalletAddressRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetReceiverWalletAddress()) < 1 {
-		err := Transfer2WalletAddressRequestValidationError{
-			field:  "ReceiverWalletAddress",
+	if utf8.RuneCountInString(m.GetRequestId()) < 1 {
+		err := TransferRequestValidationError{
+			field:  "RequestId",
 			reason: "value length must be at least 1 runes",
 		}
 		if !all {
@@ -91,19 +319,19 @@ func (m *Transfer2WalletAddressRequest) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return Transfer2WalletAddressRequestMultiError(errors)
+		return TransferRequestMultiError(errors)
 	}
 
 	return nil
 }
 
-// Transfer2WalletAddressRequestMultiError is an error wrapping multiple
-// validation errors returned by Transfer2WalletAddressRequest.ValidateAll()
-// if the designated constraints aren't met.
-type Transfer2WalletAddressRequestMultiError []error
+// TransferRequestMultiError is an error wrapping multiple validation errors
+// returned by TransferRequest.ValidateAll() if the designated constraints
+// aren't met.
+type TransferRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m Transfer2WalletAddressRequestMultiError) Error() string {
+func (m TransferRequestMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -112,12 +340,11 @@ func (m Transfer2WalletAddressRequestMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m Transfer2WalletAddressRequestMultiError) AllErrors() []error { return m }
+func (m TransferRequestMultiError) AllErrors() []error { return m }
 
-// Transfer2WalletAddressRequestValidationError is the validation error
-// returned by Transfer2WalletAddressRequest.Validate if the designated
-// constraints aren't met.
-type Transfer2WalletAddressRequestValidationError struct {
+// TransferRequestValidationError is the validation error returned by
+// TransferRequest.Validate if the designated constraints aren't met.
+type TransferRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -125,24 +352,22 @@ type Transfer2WalletAddressRequestValidationError struct {
 }
 
 // Field function returns field value.
-func (e Transfer2WalletAddressRequestValidationError) Field() string { return e.field }
+func (e TransferRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e Transfer2WalletAddressRequestValidationError) Reason() string { return e.reason }
+func (e TransferRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e Transfer2WalletAddressRequestValidationError) Cause() error { return e.cause }
+func (e TransferRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e Transfer2WalletAddressRequestValidationError) Key() bool { return e.key }
+func (e TransferRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e Transfer2WalletAddressRequestValidationError) ErrorName() string {
-	return "Transfer2WalletAddressRequestValidationError"
-}
+func (e TransferRequestValidationError) ErrorName() string { return "TransferRequestValidationError" }
 
 // Error satisfies the builtin error interface
-func (e Transfer2WalletAddressRequestValidationError) Error() string {
+func (e TransferRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -154,14 +379,14 @@ func (e Transfer2WalletAddressRequestValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sTransfer2WalletAddressRequest.%s: %s%s",
+		"invalid %sTransferRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = Transfer2WalletAddressRequestValidationError{}
+var _ error = TransferRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -169,46 +394,46 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = Transfer2WalletAddressRequestValidationError{}
+} = TransferRequestValidationError{}
 
-// Validate checks the field values on Transfer2WalletAddressResponse with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *Transfer2WalletAddressResponse) Validate() error {
+// Validate checks the field values on TransferResponse with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *TransferResponse) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on Transfer2WalletAddressResponse with
-// the rules defined in the proto definition for this message. If any rules
-// are violated, the result is a list of violation errors wrapped in
-// Transfer2WalletAddressResponseMultiError, or nil if none found.
-func (m *Transfer2WalletAddressResponse) ValidateAll() error {
+// ValidateAll checks the field values on TransferResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// TransferResponseMultiError, or nil if none found.
+func (m *TransferResponse) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *Transfer2WalletAddressResponse) validate(all bool) error {
+func (m *TransferResponse) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
 
-	// no validation rules for TransactionSignature
+	// no validation rules for Hash
 
 	if len(errors) > 0 {
-		return Transfer2WalletAddressResponseMultiError(errors)
+		return TransferResponseMultiError(errors)
 	}
 
 	return nil
 }
 
-// Transfer2WalletAddressResponseMultiError is an error wrapping multiple
-// validation errors returned by Transfer2WalletAddressResponse.ValidateAll()
-// if the designated constraints aren't met.
-type Transfer2WalletAddressResponseMultiError []error
+// TransferResponseMultiError is an error wrapping multiple validation errors
+// returned by TransferResponse.ValidateAll() if the designated constraints
+// aren't met.
+type TransferResponseMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m Transfer2WalletAddressResponseMultiError) Error() string {
+func (m TransferResponseMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -217,12 +442,11 @@ func (m Transfer2WalletAddressResponseMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m Transfer2WalletAddressResponseMultiError) AllErrors() []error { return m }
+func (m TransferResponseMultiError) AllErrors() []error { return m }
 
-// Transfer2WalletAddressResponseValidationError is the validation error
-// returned by Transfer2WalletAddressResponse.Validate if the designated
-// constraints aren't met.
-type Transfer2WalletAddressResponseValidationError struct {
+// TransferResponseValidationError is the validation error returned by
+// TransferResponse.Validate if the designated constraints aren't met.
+type TransferResponseValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -230,24 +454,22 @@ type Transfer2WalletAddressResponseValidationError struct {
 }
 
 // Field function returns field value.
-func (e Transfer2WalletAddressResponseValidationError) Field() string { return e.field }
+func (e TransferResponseValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e Transfer2WalletAddressResponseValidationError) Reason() string { return e.reason }
+func (e TransferResponseValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e Transfer2WalletAddressResponseValidationError) Cause() error { return e.cause }
+func (e TransferResponseValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e Transfer2WalletAddressResponseValidationError) Key() bool { return e.key }
+func (e TransferResponseValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e Transfer2WalletAddressResponseValidationError) ErrorName() string {
-	return "Transfer2WalletAddressResponseValidationError"
-}
+func (e TransferResponseValidationError) ErrorName() string { return "TransferResponseValidationError" }
 
 // Error satisfies the builtin error interface
-func (e Transfer2WalletAddressResponseValidationError) Error() string {
+func (e TransferResponseValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -259,14 +481,14 @@ func (e Transfer2WalletAddressResponseValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sTransfer2WalletAddressResponse.%s: %s%s",
+		"invalid %sTransferResponse.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = Transfer2WalletAddressResponseValidationError{}
+var _ error = TransferResponseValidationError{}
 
 var _ interface {
 	Field() string
@@ -274,55 +496,48 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = Transfer2WalletAddressResponseValidationError{}
+} = TransferResponseValidationError{}
 
-// Validate checks the field values on GetWalletAddressByUserIdRequest with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *GetWalletAddressByUserIdRequest) Validate() error {
+// Validate checks the field values on TransferCallback with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *TransferCallback) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on GetWalletAddressByUserIdRequest with
-// the rules defined in the proto definition for this message. If any rules
-// are violated, the result is a list of violation errors wrapped in
-// GetWalletAddressByUserIdRequestMultiError, or nil if none found.
-func (m *GetWalletAddressByUserIdRequest) ValidateAll() error {
+// ValidateAll checks the field values on TransferCallback with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// TransferCallbackMultiError, or nil if none found.
+func (m *TransferCallback) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *GetWalletAddressByUserIdRequest) validate(all bool) error {
+func (m *TransferCallback) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
 
-	if m.GetUserId() <= 0 {
-		err := GetWalletAddressByUserIdRequestValidationError{
-			field:  "UserId",
-			reason: "value must be greater than 0",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for RequestId
+
+	// no validation rules for Hash
 
 	if len(errors) > 0 {
-		return GetWalletAddressByUserIdRequestMultiError(errors)
+		return TransferCallbackMultiError(errors)
 	}
 
 	return nil
 }
 
-// GetWalletAddressByUserIdRequestMultiError is an error wrapping multiple
-// validation errors returned by GetWalletAddressByUserIdRequest.ValidateAll()
-// if the designated constraints aren't met.
-type GetWalletAddressByUserIdRequestMultiError []error
+// TransferCallbackMultiError is an error wrapping multiple validation errors
+// returned by TransferCallback.ValidateAll() if the designated constraints
+// aren't met.
+type TransferCallbackMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m GetWalletAddressByUserIdRequestMultiError) Error() string {
+func (m TransferCallbackMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -331,12 +546,11 @@ func (m GetWalletAddressByUserIdRequestMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m GetWalletAddressByUserIdRequestMultiError) AllErrors() []error { return m }
+func (m TransferCallbackMultiError) AllErrors() []error { return m }
 
-// GetWalletAddressByUserIdRequestValidationError is the validation error
-// returned by GetWalletAddressByUserIdRequest.Validate if the designated
-// constraints aren't met.
-type GetWalletAddressByUserIdRequestValidationError struct {
+// TransferCallbackValidationError is the validation error returned by
+// TransferCallback.Validate if the designated constraints aren't met.
+type TransferCallbackValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -344,24 +558,22 @@ type GetWalletAddressByUserIdRequestValidationError struct {
 }
 
 // Field function returns field value.
-func (e GetWalletAddressByUserIdRequestValidationError) Field() string { return e.field }
+func (e TransferCallbackValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e GetWalletAddressByUserIdRequestValidationError) Reason() string { return e.reason }
+func (e TransferCallbackValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e GetWalletAddressByUserIdRequestValidationError) Cause() error { return e.cause }
+func (e TransferCallbackValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e GetWalletAddressByUserIdRequestValidationError) Key() bool { return e.key }
+func (e TransferCallbackValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e GetWalletAddressByUserIdRequestValidationError) ErrorName() string {
-	return "GetWalletAddressByUserIdRequestValidationError"
-}
+func (e TransferCallbackValidationError) ErrorName() string { return "TransferCallbackValidationError" }
 
 // Error satisfies the builtin error interface
-func (e GetWalletAddressByUserIdRequestValidationError) Error() string {
+func (e TransferCallbackValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -373,14 +585,14 @@ func (e GetWalletAddressByUserIdRequestValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sGetWalletAddressByUserIdRequest.%s: %s%s",
+		"invalid %sTransferCallback.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = GetWalletAddressByUserIdRequestValidationError{}
+var _ error = TransferCallbackValidationError{}
 
 var _ interface {
 	Field() string
@@ -388,48 +600,52 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = GetWalletAddressByUserIdRequestValidationError{}
+} = TransferCallbackValidationError{}
 
-// Validate checks the field values on GetWalletAddressByUserIdResponse with
-// the rules defined in the proto definition for this message. If any rules
-// are violated, the first error encountered is returned, or nil if there are
-// no violations.
-func (m *GetWalletAddressByUserIdResponse) Validate() error {
+// Validate checks the field values on DepositCallback with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *DepositCallback) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on GetWalletAddressByUserIdResponse with
-// the rules defined in the proto definition for this message. If any rules
-// are violated, the result is a list of violation errors wrapped in
-// GetWalletAddressByUserIdResponseMultiError, or nil if none found.
-func (m *GetWalletAddressByUserIdResponse) ValidateAll() error {
+// ValidateAll checks the field values on DepositCallback with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DepositCallbackMultiError, or nil if none found.
+func (m *DepositCallback) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *GetWalletAddressByUserIdResponse) validate(all bool) error {
+func (m *DepositCallback) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
 
-	// no validation rules for WalletAddress
+	// no validation rules for Token
+
+	// no validation rules for Address
+
+	// no validation rules for Amount
+
+	// no validation rules for Hash
 
 	if len(errors) > 0 {
-		return GetWalletAddressByUserIdResponseMultiError(errors)
+		return DepositCallbackMultiError(errors)
 	}
 
 	return nil
 }
 
-// GetWalletAddressByUserIdResponseMultiError is an error wrapping multiple
-// validation errors returned by
-// GetWalletAddressByUserIdResponse.ValidateAll() if the designated
-// constraints aren't met.
-type GetWalletAddressByUserIdResponseMultiError []error
+// DepositCallbackMultiError is an error wrapping multiple validation errors
+// returned by DepositCallback.ValidateAll() if the designated constraints
+// aren't met.
+type DepositCallbackMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m GetWalletAddressByUserIdResponseMultiError) Error() string {
+func (m DepositCallbackMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -438,12 +654,11 @@ func (m GetWalletAddressByUserIdResponseMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m GetWalletAddressByUserIdResponseMultiError) AllErrors() []error { return m }
+func (m DepositCallbackMultiError) AllErrors() []error { return m }
 
-// GetWalletAddressByUserIdResponseValidationError is the validation error
-// returned by GetWalletAddressByUserIdResponse.Validate if the designated
-// constraints aren't met.
-type GetWalletAddressByUserIdResponseValidationError struct {
+// DepositCallbackValidationError is the validation error returned by
+// DepositCallback.Validate if the designated constraints aren't met.
+type DepositCallbackValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -451,24 +666,22 @@ type GetWalletAddressByUserIdResponseValidationError struct {
 }
 
 // Field function returns field value.
-func (e GetWalletAddressByUserIdResponseValidationError) Field() string { return e.field }
+func (e DepositCallbackValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e GetWalletAddressByUserIdResponseValidationError) Reason() string { return e.reason }
+func (e DepositCallbackValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e GetWalletAddressByUserIdResponseValidationError) Cause() error { return e.cause }
+func (e DepositCallbackValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e GetWalletAddressByUserIdResponseValidationError) Key() bool { return e.key }
+func (e DepositCallbackValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e GetWalletAddressByUserIdResponseValidationError) ErrorName() string {
-	return "GetWalletAddressByUserIdResponseValidationError"
-}
+func (e DepositCallbackValidationError) ErrorName() string { return "DepositCallbackValidationError" }
 
 // Error satisfies the builtin error interface
-func (e GetWalletAddressByUserIdResponseValidationError) Error() string {
+func (e DepositCallbackValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -480,14 +693,14 @@ func (e GetWalletAddressByUserIdResponseValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sGetWalletAddressByUserIdResponse.%s: %s%s",
+		"invalid %sDepositCallback.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = GetWalletAddressByUserIdResponseValidationError{}
+var _ error = DepositCallbackValidationError{}
 
 var _ interface {
 	Field() string
@@ -495,214 +708,4 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = GetWalletAddressByUserIdResponseValidationError{}
-
-// Validate checks the field values on CreateWalletByMnemonicRequest with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *CreateWalletByMnemonicRequest) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on CreateWalletByMnemonicRequest with
-// the rules defined in the proto definition for this message. If any rules
-// are violated, the result is a list of violation errors wrapped in
-// CreateWalletByMnemonicRequestMultiError, or nil if none found.
-func (m *CreateWalletByMnemonicRequest) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *CreateWalletByMnemonicRequest) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if len(errors) > 0 {
-		return CreateWalletByMnemonicRequestMultiError(errors)
-	}
-
-	return nil
-}
-
-// CreateWalletByMnemonicRequestMultiError is an error wrapping multiple
-// validation errors returned by CreateWalletByMnemonicRequest.ValidateAll()
-// if the designated constraints aren't met.
-type CreateWalletByMnemonicRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m CreateWalletByMnemonicRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m CreateWalletByMnemonicRequestMultiError) AllErrors() []error { return m }
-
-// CreateWalletByMnemonicRequestValidationError is the validation error
-// returned by CreateWalletByMnemonicRequest.Validate if the designated
-// constraints aren't met.
-type CreateWalletByMnemonicRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e CreateWalletByMnemonicRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e CreateWalletByMnemonicRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e CreateWalletByMnemonicRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e CreateWalletByMnemonicRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e CreateWalletByMnemonicRequestValidationError) ErrorName() string {
-	return "CreateWalletByMnemonicRequestValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e CreateWalletByMnemonicRequestValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sCreateWalletByMnemonicRequest.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = CreateWalletByMnemonicRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = CreateWalletByMnemonicRequestValidationError{}
-
-// Validate checks the field values on CreateWalletByMnemonicResponse with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *CreateWalletByMnemonicResponse) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on CreateWalletByMnemonicResponse with
-// the rules defined in the proto definition for this message. If any rules
-// are violated, the result is a list of violation errors wrapped in
-// CreateWalletByMnemonicResponseMultiError, or nil if none found.
-func (m *CreateWalletByMnemonicResponse) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *CreateWalletByMnemonicResponse) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for PrivateKey
-
-	// no validation rules for PublicKey
-
-	if len(errors) > 0 {
-		return CreateWalletByMnemonicResponseMultiError(errors)
-	}
-
-	return nil
-}
-
-// CreateWalletByMnemonicResponseMultiError is an error wrapping multiple
-// validation errors returned by CreateWalletByMnemonicResponse.ValidateAll()
-// if the designated constraints aren't met.
-type CreateWalletByMnemonicResponseMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m CreateWalletByMnemonicResponseMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m CreateWalletByMnemonicResponseMultiError) AllErrors() []error { return m }
-
-// CreateWalletByMnemonicResponseValidationError is the validation error
-// returned by CreateWalletByMnemonicResponse.Validate if the designated
-// constraints aren't met.
-type CreateWalletByMnemonicResponseValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e CreateWalletByMnemonicResponseValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e CreateWalletByMnemonicResponseValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e CreateWalletByMnemonicResponseValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e CreateWalletByMnemonicResponseValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e CreateWalletByMnemonicResponseValidationError) ErrorName() string {
-	return "CreateWalletByMnemonicResponseValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e CreateWalletByMnemonicResponseValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sCreateWalletByMnemonicResponse.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = CreateWalletByMnemonicResponseValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = CreateWalletByMnemonicResponseValidationError{}
+} = DepositCallbackValidationError{}

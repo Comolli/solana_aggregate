@@ -12,6 +12,7 @@ import (
 
 	"github.com/gagliardetto/solana-go"
 	"github.com/gagliardetto/solana-go/programs/system"
+	"github.com/gagliardetto/solana-go/programs/token"
 	"github.com/gagliardetto/solana-go/rpc"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/tyler-smith/go-bip39"
@@ -32,6 +33,7 @@ type WalletUsecase struct {
 type WalletRepo interface {
 	GetMysqlDb() *gorm.DB
 	GetRpcSolCli() *rpc.Client
+	GetPrivateKey() string
 }
 
 func NewWalletUsecase(repo WalletRepo, logger log.Logger) *WalletUsecase {
@@ -41,31 +43,118 @@ func NewWalletUsecase(repo WalletRepo, logger log.Logger) *WalletUsecase {
 	}
 }
 
-func (u *WalletUsecase) Transfer2WalletAddress(ctx context.Context, req *pb.Transfer2WalletAddressRequest) (*pb.Transfer2WalletAddressResponse, error) {
-	userId := req.GetUserId()
-	wallet, err := u.GetUserWalletInfo(ctx, userId, WalletTypeSol)
+func (u *WalletUsecase) Transfer2WalletAddress(ctx context.Context, req *pb.TransferRequest) (*pb.TransferResponse, error) {
+	privateKey := u.Repo.GetPrivateKey()
+	repeat, err := u.CheckRequestIsRepeat(ctx, req.GetRequestId())
 	if err != nil {
 		return nil, err
 	}
-	privateKey := wallet.PrivateKey
-	sig, err := u.SendTransaction(ctx, TransactionRequest{
+	if repeat {
+		return nil, errors.New("request is repeat")
+	}
+	if req.GetToken() != "solana" {
+		tokenMintAdress, err := u.GetTokenMintAdress(ctx, req.GetToken())
+		if err != nil {
+			return nil, err
+		}
+		txReq := TransactionRequest{
+			FromPrivateKey:  privateKey,
+			ToAddress:       req.GetDstAddress(),
+			Amount:          uint64(req.GetAmount()),
+			TokenMintAdress: tokenMintAdress,
+			Commitment:      rpc.CommitmentFinalized,
+			SkipPreflight:   false,
+			RequestId:       req.GetRequestId(),
+			Token:           req.GetToken(),
+		}
+		sig, err := u.SendTokenTransaction(ctx, txReq)
+		if err != nil {
+			return nil, err
+		}
+		txReq.Hash = sig
+		if err = u.CreateUserWalletTransaction(ctx, txReq); err != nil {
+			return nil, err
+		}
+		return &pb.TransferResponse{
+			Hash: sig,
+		}, nil
+	}
+	txReq := TransactionRequest{
 		FromPrivateKey: privateKey,
-		ToAddress:      req.GetReceiverWalletAddress(),
+		ToAddress:      req.GetDstAddress(),
 		Amount:         uint64(req.GetAmount()),
 		Commitment:     rpc.CommitmentFinalized,
 		SkipPreflight:  false,
-	})
+		RequestId:      req.GetRequestId(),
+	}
+	sig, err := u.SendSolanaTransaction(ctx, txReq)
 	if err != nil {
 		return nil, err
 	}
-	return &pb.Transfer2WalletAddressResponse{
-		TransactionSignature: sig,
+	txReq.Hash = sig
+	if err = u.CreateUserWalletTransaction(ctx, txReq); err != nil {
+		return nil, err
+	}
+	return &pb.TransferResponse{
+		Hash: sig,
 	}, nil
 }
 
-func (u *WalletUsecase) CreateWalletByMnemonic(ctx context.Context, req *pb.CreateWalletByMnemonicRequest) (*pb.CreateWalletByMnemonicResponse, error) {
-	return &pb.CreateWalletByMnemonicResponse{}, nil
+func (u *WalletUsecase) CreateUserWalletTransaction(ctx context.Context, req TransactionRequest) error {
+	mysqlDb := u.Repo.GetMysqlDb()
+	return models.CreateV2[UserWalletTransaction](ctx, mysqlDb, &UserWalletTransaction{
+		Amount: int64(req.Amount),
+		// FromWallet: req.FromPrivateKey,
+		ToWallet: req.ToAddress,
+		// Status:     1,
+		RequestID: req.RequestId,
+		Hash:      req.Hash,
+		Token:     req.Token,
+	})
 }
+
+func (u *WalletUsecase) CheckRequestIsRepeat(ctx context.Context, requestId string) (bool, error) {
+	mysqlDb := u.Repo.GetMysqlDb()
+	res := []*UserWalletTransaction{}
+	cnt, err := models.List(ctx, mysqlDb, func(d *gorm.DB) *gorm.DB {
+		return d.Debug().Where("request_id = ?", requestId)
+	}, &res)
+	if err != nil {
+		return false, err
+	}
+	if cnt > 0 {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (u *WalletUsecase) GetTokenMintAdress(ctx context.Context, token string) (string, error) {
+	mysqlDb := u.Repo.GetMysqlDb()
+	res := []*TokenMintAdress{}
+	cnt, err := models.List(ctx, mysqlDb, func(d *gorm.DB) *gorm.DB {
+		return d.Debug().Where("token = ?", token)
+	}, &res)
+	if err != nil {
+		return "", err
+	}
+	if cnt == 0 {
+		return "", errors.New("cant find token mint adress")
+	}
+	return res[0].Address, nil
+}
+
+func CheckTokenAddressIsSolanaAddress(address string) (bool, error) {
+	// Attempt to parse the address as a Solana public key
+	_, err := solana.PublicKeyFromBase58(address)
+	if err != nil {
+		return false, err // Return false if the address is invalid
+	}
+	return true, nil // Return true if the address is valid
+}
+
+// func (u *WalletUsecase) CreateWalletByMnemonic(ctx context.Context, req *pb.CreateWalletByMnemonicRequest) (*pb.CreateWalletByMnemonicResponse, error) {
+// 	return &pb.CreateWalletByMnemonicResponse{}, nil
+// }
 
 func (u *WalletUsecase) GetUserWalletInfo(ctx context.Context, userId uint64, walletType walletType) (*UserWallet, error) {
 	mysqlDb := u.Repo.GetMysqlDb()
@@ -82,7 +171,7 @@ func (u *WalletUsecase) GetUserWalletInfo(ctx context.Context, userId uint64, wa
 	return res[0], nil
 }
 
-func (u *WalletUsecase) GetWalletAddressByUserId(ctx context.Context, req *pb.GetWalletAddressByUserIdRequest) (*pb.GetWalletAddressByUserIdResponse, error) {
+func (u *WalletUsecase) GetWalletAddressByUserId(ctx context.Context, req *pb.CreateAddressRequest) (*pb.CreateAddressResponse, error) {
 	userId := req.GetUserId()
 	mysqlDb := u.Repo.GetMysqlDb()
 	res := []*UserWallet{}
@@ -93,8 +182,8 @@ func (u *WalletUsecase) GetWalletAddressByUserId(ctx context.Context, req *pb.Ge
 		return nil, err
 	}
 	if cnt > 0 {
-		return &pb.GetWalletAddressByUserIdResponse{
-			WalletAddress: res[0].WalletAddress,
+		return &pb.CreateAddressResponse{
+			Address: res[0].WalletAddress,
 		}, nil
 	}
 
@@ -102,8 +191,8 @@ func (u *WalletUsecase) GetWalletAddressByUserId(ctx context.Context, req *pb.Ge
 	if err != nil {
 		return nil, err
 	}
-	return &pb.GetWalletAddressByUserIdResponse{
-		WalletAddress: pubKey,
+	return &pb.CreateAddressResponse{
+		Address: pubKey,
 	}, nil
 }
 
@@ -137,15 +226,76 @@ func (u *WalletUsecase) CreateWalletWithMnemonic(ctx context.Context, userId uin
 }
 
 type TransactionRequest struct {
-	FromPrivateKey string
-	ToAddress      string
-	Amount         uint64
-	Commitment     rpc.CommitmentType
-	SkipPreflight  bool
+	FromPrivateKey  string
+	ToAddress       string
+	Amount          uint64
+	Commitment      rpc.CommitmentType
+	TokenMintAdress string
+	SkipPreflight   bool
+	RequestId       string
+	Token           string
+	Hash            string
+}
+
+func (s *WalletUsecase) SendTokenTransaction(ctx context.Context, req TransactionRequest) (string, error) {
+	rpcCli := s.Repo.GetRpcSolCli()
+	// Create the sender's keypair from the private key
+	senderKeypair, err := solana.PrivateKeyFromBase58(req.FromPrivateKey)
+	if err != nil {
+		return "", err
+		// log.Fatalf("failed to create sender keypair: %v", err)
+	}
+	// Create the recipient public key
+	recipientPubKey, err := solana.PublicKeyFromBase58(req.ToAddress)
+	if err != nil {
+		log.Fatalf("failed to create recipient public key: %v", err)
+		return "", err
+	}
+	// Create the  token mint address
+	tokenMintAdress := solana.MustPublicKeyFromBase58(req.TokenMintAdress)
+	// Create the token transfer instruction
+	transferInstruction := token.NewTransferInstruction(
+		req.Amount,
+		senderKeypair.PublicKey(),
+		recipientPubKey,
+		tokenMintAdress,
+		[]solana.PublicKey{},
+	).Build()
+
+	recent, err := rpcCli.GetRecentBlockhash(ctx, req.Commitment)
+	if err != nil {
+		return "", fmt.Errorf("failed to get recent blockhash: %w", err)
+	}
+	// Create a transaction
+	tx, err := solana.NewTransaction(
+		[]solana.Instruction{transferInstruction},
+		recent.Value.Blockhash,
+		solana.TransactionPayer(senderKeypair.PublicKey()),
+	)
+	if err != nil {
+		log.Fatalf("failed to create transaction: %v", err)
+	}
+
+	// Sign the transaction
+	_, err = tx.Sign(func(key solana.PublicKey) *solana.PrivateKey {
+		if key.Equals(senderKeypair.PublicKey()) {
+			return &senderKeypair
+		}
+		return nil
+	})
+	if err != nil {
+		return "", fmt.Errorf("failed to sign transaction: %v", err)
+	}
+	// Send the transaction
+	signature, err := rpcCli.SendTransaction(context.Background(), tx)
+	if err != nil {
+		log.Fatalf("failed to send transaction: %v", err)
+	}
+	return signature.String(), nil
 }
 
 // SendTransaction sends SOL from one account to another
-func (s *WalletUsecase) SendTransaction(ctx context.Context, req TransactionRequest) (string, error) {
+func (s *WalletUsecase) SendSolanaTransaction(ctx context.Context, req TransactionRequest) (string, error) {
 	// Create sender wallet from private key
 	fromPrivateKey := solana.MustPrivateKeyFromBase58(req.FromPrivateKey)
 	fromPubKey := fromPrivateKey.PublicKey()

@@ -37,6 +37,9 @@ message Server {
   message SolEndpoint{
       string endpoint = 1;
   }
+  message SolanaPrivateKey{
+    string private_key = 1;
+  }
 
   HTTP http = 1;
   GRPC grpc = 2;
@@ -44,6 +47,7 @@ message Server {
   ExamService exam_service = 4;
   ResourceSrv resource_srv = 5;
   SolEndpoint sol_endpoint = 6;
+  SolanaPrivateKey solana_private_key = 7;
 }
 
 message Data {
