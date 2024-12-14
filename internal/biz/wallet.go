@@ -15,6 +15,7 @@ import (
 	"github.com/gagliardetto/solana-go/programs/token"
 	"github.com/gagliardetto/solana-go/rpc"
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/tyler-smith/go-bip32"
 	"github.com/tyler-smith/go-bip39"
 	"gorm.io/gorm"
 )
@@ -23,6 +24,10 @@ type walletType int32
 
 const (
 	WalletTypeSol walletType = 0
+)
+
+var (
+	RootWalletUserName = "root"
 )
 
 type WalletUsecase struct {
@@ -100,12 +105,18 @@ func (u *WalletUsecase) Transfer2WalletAddress(ctx context.Context, req *pb.Tran
 	}, nil
 }
 
+func DecodeSolanaPublicKey(privateKey string) string {
+	keypair := solana.MustPrivateKeyFromBase58(privateKey)
+	pubKey := keypair.PublicKey()
+	return pubKey.String()
+}
+
 func (u *WalletUsecase) CreateUserWalletTransaction(ctx context.Context, req TransactionRequest) error {
 	mysqlDb := u.Repo.GetMysqlDb()
 	return models.CreateV2[UserWalletTransaction](ctx, mysqlDb, &UserWalletTransaction{
-		Amount: int64(req.Amount),
-		// FromWallet: req.FromPrivateKey,
-		ToWallet: req.ToAddress,
+		Amount:     int64(req.Amount),
+		FromWallet: DecodeSolanaPublicKey(req.FromPrivateKey),
+		ToWallet:   req.ToAddress,
 		// Status:     1,
 		RequestID: req.RequestId,
 		Hash:      req.Hash,
@@ -194,6 +205,97 @@ func (u *WalletUsecase) GetWalletAddressByUserId(ctx context.Context, req *pb.Cr
 	return &pb.CreateAddressResponse{
 		Address: pubKey,
 	}, nil
+}
+
+func (u *WalletUsecase) GetRootUserWalletInfo(ctx context.Context) (*UserWallet, error) {
+	mysqlDb := u.Repo.GetMysqlDb()
+	res := []*UserWallet{}
+	cnt, err := models.List(ctx, mysqlDb, func(d *gorm.DB) *gorm.DB {
+		return d.Debug().Where("user_name = ?", RootWalletUserName)
+	}, &res)
+	if err != nil {
+		return nil, err
+	}
+	if cnt == 0 {
+		return nil, errors.New("cant find root user wallet")
+	}
+	return res[0], nil
+}
+
+func (u *WalletUsecase) CreateHierarchicalDeterministicWallet(ctx context.Context, userId uint64) (string, error) {
+	res := []*UserWallet{}
+	cnt, err := models.List(ctx, u.Repo.GetMysqlDb(), func(d *gorm.DB) *gorm.DB {
+		return d.Debug().Where("user_id = ?", userId)
+	}, &res)
+	if err != nil {
+		return "", err
+	}
+	if cnt > 0 {
+		return res[0].PublicKey, nil
+	}
+
+	accountIndex := uint32(userId)
+	rootUserWallet, err := u.GetRootUserWalletInfo(ctx)
+	if err != nil {
+		return "", err
+	}
+	mnemonic := rootUserWallet.Mnemonic
+	privateKey, err := deriveWallet(mnemonic, accountIndex)
+	if err != nil {
+		return "", err
+	}
+	keypair := solana.PrivateKey(privateKey)
+	pubKey := keypair.PublicKey()
+
+	return pubKey.String(), models.CreateV2[UserWallet](ctx, u.Repo.GetMysqlDb(), &UserWallet{
+		UserID:        userId,
+		WalletAddress: pubKey.String(),
+		Mnemonic:      mnemonic,
+		PrivateKey:    keypair.String(),
+		PublicKey:     pubKey.String(),
+		WalletType:    0,
+		UserName:      fmt.Sprintf("hd_wallet_user_%d", userId),
+	})
+}
+
+func deriveWallet(mnemonic string, accountIndex uint32) (solana.PrivateKey, error) {
+	// 1. 从助记词生成种子
+	seed, err := bip39.NewSeedWithErrorChecking(mnemonic, "")
+	if err != nil {
+		return nil, err
+	}
+
+	// 2. 生成主密钥
+	masterKey, err := bip32.NewMasterKey(seed)
+	if err != nil {
+		return nil, err
+	}
+
+	// 3. 按 BIP44 路径派生
+	path := []uint32{
+		44 + bip32.FirstHardenedChild,           // purpose
+		501 + bip32.FirstHardenedChild,          // coin type (SOL)
+		accountIndex + bip32.FirstHardenedChild, // account
+		0 + bip32.FirstHardenedChild,            // change
+		0 + bip32.FirstHardenedChild,            // address index
+	}
+
+	// 4. 派生子密钥
+	key := masterKey
+	for _, n := range path {
+		key, err = key.NewChildKey(n)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	privateKey := ed25519.NewKeyFromSeed(key.Key)
+
+	if _, err := solana.ValidatePrivateKey(privateKey); err != nil {
+		return nil, err
+	}
+
+	return solana.PrivateKey(privateKey), nil
 }
 
 func (u *WalletUsecase) CreateWalletWithMnemonic(ctx context.Context, userId uint64) (string, error) {

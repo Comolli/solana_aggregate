@@ -73,24 +73,39 @@ func deriveWallet(mnemonic string, accountIndex uint32) (solana.PrivateKey, erro
 
 func TestDeriveWallet(t *testing.T) {
 	// Test data
-	mnemonic := "abandon abandon ability able about above absent absorb abstract absurd abuse access accident"
-	accountIndex := uint32(0)
+	mnemonic := "begin electric midnight latin eager echo find veteran uniform milk flee brave faint tissue fire faith extra regret water mistake win bullet plate tail"
+	accountIndex := uint32(1)
 
-	// Expected private key (replace with the expected value for your test)
-	expectedPrivateKey := "your_expected_private_key_here"
-
+	// // Expected private key (replace with the expected value for your test)
+	expectedPrivateKey := "tZ7AwugCZSQM6bVYe4nLjwCfRu9WNcfqFxzxnFgkrPJaEGTK5BDEWwpiVJZgzqHPEP8GrxpWiggEsNCRLVdyURu"
+	// expectedPublicKey := DecodeSolanaPublicKey(expectedPrivateKey)
+	expectedPublicKey := "D6cpS6HaKutqRpE5yHR6NJnjKy3Rv2KfkSyxN4p1znbZ"
 	// Call the deriveWallet function
 	privateKey, err := deriveWallet(mnemonic, accountIndex)
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
+	t.Log(privateKey.String())
 
 	// Validate the derived private key
+
 	if privateKey.String() != expectedPrivateKey {
 		t.Errorf("Expected private key %s, got %s", expectedPrivateKey, privateKey.String())
 	}
+	// Validate the derived public key
+	publicKey := privateKey.PublicKey()
+	if publicKey.String() != expectedPublicKey {
+		t.Errorf("Expected public key %s, got %s", expectedPublicKey, publicKey.String())
+	}
+	t.Log(publicKey.String())
+
 }
 
+func DecodeSolanaPublicKey(privateKey string) string {
+	keypair := solana.MustPrivateKeyFromBase58(privateKey)
+	pubKey := keypair.PublicKey()
+	return pubKey.String()
+}
 func TestGetAccountSlot(t *testing.T) {
 	// Connect to the Solana devnet
 	client := rpc.New(rpc.DevNet_RPC)

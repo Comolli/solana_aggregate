@@ -21,17 +21,19 @@ type UserWallet struct {
 	WalletAddress string `gorm:"type:varchar(1024);default:'';comment:'钱包地址'" json:"wallet_address"`
 	Mnemonic      string `gorm:"type:varchar(1024);default:'';comment:'助记词'" json:"mnemonic"`
 	PrivateKey    string `gorm:"type:varchar(1024);default:'';comment:'私钥'" json:"private_key"`
+	PublicKey     string `gorm:"type:varchar(1024);default:'';comment:'公钥'" json:"public_key"`
+	UserName      string `gorm:"type:varchar(1024);default:'';comment:'用户名'" json:"user_name"`
 }
 
 type UserWalletTransaction struct {
 	gorm.Model
-	Token string `gorm:"type:varchar(1024);default:'';comment:'token名字'" json:"token"`
-	// FromWalletPrivateKey string `gorm:"type:varchar(1024);default:'';comment:'发送者钱包私钥'" json:"from_wallet_private_key"`
-	ToWallet  string `gorm:"type:varchar(1024);default:'';comment:'接收者钱包地址'" json:"to_wallet"`
-	Amount    int64  `gorm:"type:int;default:0;comment:'金额'" json:"amount"`
-	Status    int    `gorm:"type:int;default:0;comment:'状态: 0=>初始化default 1=>成功 2=>失败'" json:"status"`
-	RequestID string `gorm:"type:varchar(1024);default:'';comment:'请求id'" json:"request_id"`
-	Hash      string `gorm:"type:varchar(1024);default:'';comment:'交易hash'" json:"hash"`
+	Token      string `gorm:"type:varchar(1024);default:'';comment:'token名字'" json:"token"`
+	FromWallet string `gorm:"type:varchar(1024);default:'';comment:'发送者钱包publicKey'" json:"from_wallet_private_key"`
+	ToWallet   string `gorm:"type:varchar(1024);default:'';comment:'接收者钱包地址'" json:"to_wallet"`
+	Amount     int64  `gorm:"type:int;default:0;comment:'金额'" json:"amount"`
+	Status     int    `gorm:"type:int;default:0;comment:'状态: 0=>初始化default 1=>成功 2=>失败'" json:"status"`
+	RequestID  string `gorm:"type:varchar(1024);default:'';comment:'请求id'" json:"request_id"`
+	Hash       string `gorm:"type:varchar(1024);default:'';comment:'交易hash'" json:"hash"`
 }
 
 type TokenMintAdress struct {
