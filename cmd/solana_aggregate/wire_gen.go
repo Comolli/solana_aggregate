@@ -31,12 +31,11 @@ func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*
 	if err != nil {
 		return nil, nil, err
 	}
-	greeterRepo := data.NewGreeterRepo(dataData, logger)
-	greeterUsecase := biz.NewGreeterUsecase(greeterRepo, logger)
-	greeterService := service.NewGreeterService(greeterUsecase)
-	walletService := service.NewWalletService()
-	grpcServer := server.NewGRPCServer(confServer, greeterService, walletService, logger)
-	httpServer := server.NewHTTPServer(confServer, greeterService, walletService, logger)
+	walletRepo := data.NewWalletRepo(dataData, logger)
+	walletUsecase := biz.NewWalletUsecase(walletRepo, logger)
+	walletService := service.NewWalletService(walletUsecase)
+	grpcServer := server.NewGRPCServer(confServer, walletService, logger)
+	httpServer := server.NewHTTPServer(confServer, walletService, logger)
 	app := newApp(logger, grpcServer, httpServer)
 	return app, func() {
 		cleanup()

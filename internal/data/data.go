@@ -15,7 +15,7 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewMysql, NewGreeterRepo, NewWalletRepo, NewSolRpcCli, NewPrivateKey)
+var ProviderSet = wire.NewSet(NewData, NewMysql, NewWalletRepo, NewSolRpcCli, NewPrivateKey)
 
 // Data .
 type Data struct {
@@ -57,13 +57,6 @@ func NewMysql(conf *conf.Data, logger log.Logger) *gorm.DB {
 	if err != nil {
 		log.Fatalf("failed opening connection to mysql: %v", err)
 	}
-	// if !db.Migrator().HasTable(&model.PrepareLessonEventRecord{}) {
-	// 	if err := db.AutoMigrate(
-	// 		&model.PrepareLessonEventRecord{},
-	// 	); err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// }
 	_d, err := db.DB()
 	if err != nil {
 		log.Fatal(err)

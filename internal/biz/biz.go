@@ -6,7 +6,7 @@ import (
 )
 
 // ProviderSet is biz providers.
-var ProviderSet = wire.NewSet(NewGreeterUsecase, NewWalletUsecase)
+var ProviderSet = wire.NewSet(NewWalletUsecase)
 
 type UserInfo struct {
 	gorm.Model

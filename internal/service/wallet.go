@@ -11,8 +11,10 @@ type WalletService struct {
 	uc *biz.WalletUsecase
 }
 
-func NewWalletService() *WalletService {
-	return &WalletService{}
+func NewWalletService(uc *biz.WalletUsecase) *WalletService {
+	return &WalletService{
+		uc: uc,
+	}
 }
 
 func (s *WalletService) CreateAddress(ctx context.Context, req *pb.CreateAddressRequest) (*pb.CreateAddressResponse, error) {
@@ -25,18 +27,6 @@ func (s *WalletService) Transfer(ctx context.Context, req *pb.TransferRequest) (
 
 // func (s *WalletService) CreateWalletByMnemonic(ctx context.Context, req *pb.CreateWalletByMnemonicRequest) (*pb.CreateWalletByMnemonicResponse, error) {
 // 	return s.uc.CreateWalletByMnemonic(ctx, req)
-// }
-
-// func (u *PrepareLessonUsecase) GetPrepareIdTimeOutPass(ctx context.Context, schoolId string) ([]*Interact, error) {
-// 	res := []*Interact{}
-// 	timeOutAgo := time.Now().Add(-(1 * AndriodEndTimeOut))
-// 	t := utils.GetTableName(schoolId, Interact{}.TableName())
-// 	if _, err := models.ListV2[Interact](ctx, u.repo.GetDB(), func(d *gorm.DB) *gorm.DB {
-// 		return d.Debug().Where("created_at < ? and deleted_at is null", timeOutAgo)
-// 	}, &res, t); err != nil {
-// 		return nil, err
-// 	}
-// 	return res, nil
 // }
 
 // func (s *WalletService) GetWalletAddressByUserId(ctx context.Context, req *pb.GetWalletAddressByUserIdRequest) (*pb.GetWalletAddressByUserIdResponse, error) {

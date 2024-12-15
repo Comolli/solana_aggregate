@@ -1,7 +1,6 @@
 package server
 
 import (
-	v1 "solana_aggregate/api/helloworld/v1"
 	"solana_aggregate/internal/conf"
 	"solana_aggregate/internal/service"
 
@@ -13,7 +12,7 @@ import (
 )
 
 // NewGRPCServer new a gRPC server.
-func NewGRPCServer(c *conf.Server, greeter *service.GreeterService, wallet *service.WalletService, logger log.Logger) *grpc.Server {
+func NewGRPCServer(c *conf.Server, wallet *service.WalletService, logger log.Logger) *grpc.Server {
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
@@ -29,7 +28,6 @@ func NewGRPCServer(c *conf.Server, greeter *service.GreeterService, wallet *serv
 		opts = append(opts, grpc.Timeout(c.Grpc.Timeout.AsDuration()))
 	}
 	srv := grpc.NewServer(opts...)
-	v1.RegisterGreeterServer(srv, greeter)
 	pb.RegisterWalletServer(srv, wallet)
 	return srv
 }
