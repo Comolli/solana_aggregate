@@ -12,6 +12,10 @@ server:
 data:
   database:
     driver: mysql
-    user: root
+    user: sol_wallet
     protocol: tcp
-    database: test
+    database: sol_wallet_db
+    pwd: "12334567800"
+    host: 127.0.0.1
+    port: 3306
+

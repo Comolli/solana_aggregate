@@ -15,13 +15,12 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewMysql, NewWalletRepo, NewSolRpcCli, NewPrivateKey)
+var ProviderSet = wire.NewSet(NewData, NewMysql, NewWalletRepo, NewSolRpcCli)
 
 // Data .
 type Data struct {
-	MysqlDb    *gorm.DB
-	solRpcCli  *rpc.Client
-	privateKey string
+	MysqlDb   *gorm.DB
+	solRpcCli *rpc.Client
 }
 
 // NewData .
@@ -29,24 +28,19 @@ func NewData(
 	logger log.Logger,
 	mysqlDb *gorm.DB,
 	solRpcCli *rpc.Client,
-	privateKey string,
 ) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
 	return &Data{
-		MysqlDb:    mysqlDb,
-		solRpcCli:  solRpcCli,
-		privateKey: privateKey,
+
+		MysqlDb:   mysqlDb,
+		solRpcCli: solRpcCli,
 	}, cleanup, nil
 }
 
 func NewSolRpcCli(c *conf.Server, logger log.Logger) *rpc.Client {
 	return rpc.New(c.SolEndpoint.Endpoint)
-}
-
-func NewPrivateKey(c *conf.Server, logger log.Logger) string {
-	return c.SolanaPrivateKey.PrivateKey
 }
 
 func NewMysql(conf *conf.Data, logger log.Logger) *gorm.DB {

@@ -16,46 +16,15 @@
     "application/json"
   ],
   "paths": {
-    "/wallet/address/v1/{user_id}": {
-      "get": {
-        "operationId": "Wallet_GetWalletAddressByUserId",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1GetWalletAddressByUserIdResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "user_id",
-            "description": "用户id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          }
-        ],
-        "tags": [
-          "Wallet"
-        ]
-      }
-    },
-    "/wallet/create/v1": {
+    "/api/wallet/v1/address": {
       "post": {
-        "operationId": "Wallet_CreateWalletByMnemonic",
+        "summary": "创建用户的sol地址",
+        "operationId": "Wallet_CreateAddress",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1CreateWalletByMnemonicResponse"
+              "$ref": "#/definitions/v1CreateAddressResponse"
             }
           },
           "default": {
@@ -71,7 +40,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1CreateWalletByMnemonicRequest"
+              "$ref": "#/definitions/v1CreateAddressRequest"
             }
           }
         ],
@@ -80,14 +49,15 @@
         ]
       }
     },
-    "/wallet/transfer/v1": {
+    "/api/wallet/v1/transfer": {
       "post": {
-        "operationId": "Wallet_Transfer2WalletAddress",
+        "summary": "转账",
+        "operationId": "Wallet_Transfer",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1Transfer2WalletAddressResponse"
+              "$ref": "#/definitions/v1TransferResponse"
             }
           },
           "default": {
@@ -103,7 +73,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1Transfer2WalletAddressRequest"
+              "$ref": "#/definitions/v1TransferRequest"
             }
           }
         ],
@@ -142,65 +112,53 @@
         }
       }
     },
-    "v1CreateWalletByMnemonicRequest": {
-      "type": "object",
-      "properties": {
-        "mnemonic": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "title": "助词"
-        }
-      }
-    },
-    "v1CreateWalletByMnemonicResponse": {
-      "type": "object",
-      "properties": {
-        "private_key": {
-          "type": "string",
-          "title": "私钥"
-        },
-        "public_key": {
-          "type": "string",
-          "title": "公钥"
-        }
-      }
-    },
-    "v1GetWalletAddressByUserIdResponse": {
-      "type": "object",
-      "properties": {
-        "wallet_address": {
-          "type": "string",
-          "title": "钱包地址"
-        }
-      }
-    },
-    "v1Transfer2WalletAddressRequest": {
+    "v1CreateAddressRequest": {
       "type": "object",
       "properties": {
         "user_id": {
           "type": "string",
           "format": "uint64",
           "title": "用户id"
-        },
-        "amount": {
-          "type": "number",
-          "format": "float",
-          "title": "金额"
-        },
-        "receiver_wallet_address": {
-          "type": "string",
-          "title": "目标钱包地址"
         }
       }
     },
-    "v1Transfer2WalletAddressResponse": {
+    "v1CreateAddressResponse": {
       "type": "object",
       "properties": {
-        "transaction_signature": {
+        "address": {
           "type": "string",
-          "title": "交易签名"
+          "title": "钱包地址"
+        }
+      }
+    },
+    "v1TransferRequest": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "title": "token 名字"
+        },
+        "dst_address": {
+          "type": "string",
+          "title": "目标钱包地址"
+        },
+        "amount": {
+          "type": "string",
+          "format": "uint64",
+          "title": "金额"
+        },
+        "request_id": {
+          "type": "string",
+          "title": "请求id, 作用是去重, 防止重复请求"
+        }
+      }
+    },
+    "v1TransferResponse": {
+      "type": "object",
+      "properties": {
+        "hash": {
+          "type": "string",
+          "title": "交易hash"
         }
       }
     }

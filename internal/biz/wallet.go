@@ -198,7 +198,7 @@ func (u *WalletUsecase) GetWalletAddressByUserId(ctx context.Context, req *pb.Cr
 		}, nil
 	}
 
-	pubKey, err := u.CreateWalletWithMnemonic(ctx, userId)
+	pubKey, err := u.CreateHierarchicalDeterministicWallet(ctx, userId)
 	if err != nil {
 		return nil, err
 	}

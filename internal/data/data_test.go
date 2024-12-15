@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/ed25519"
 	"fmt"
+	"solana_aggregate/internal/biz"
+	"solana_aggregate/pkg/hdwallet"
 	"testing"
 
 	"github.com/davecgh/go-spew/spew"
@@ -11,6 +13,9 @@ import (
 	"github.com/gagliardetto/solana-go/programs/system"
 	"github.com/gagliardetto/solana-go/rpc"
 	"github.com/gagliardetto/solana-go/rpc/ws"
+	"github.com/mr-tron/base58"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 
 	confirm "github.com/gagliardetto/solana-go/rpc/sendAndConfirmTransaction"
 	"github.com/tyler-smith/go-bip32"
@@ -321,4 +326,39 @@ func TestTransferSOLWs(t *testing.T) {
 	}
 
 	fmt.Println("Transaction signature:", sig)
+}
+
+func TestCreateUserWallet(t *testing.T) {
+	mnemonic := "begin electric midnight latin eager echo find veteran uniform milk flee brave faint tissue fire faith extra regret water mistake win bullet plate tail"
+	// create sol wallet
+	generator, err := hdwallet.NewKeypairGenerator(mnemonic)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pub, priv, err := generator.Keypair(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pubKey := base58.Encode(pub)
+	privateKey := base58.Encode(priv)
+
+	mysqlDns := "sol_wallet:12334567800@tcp()/sol_wallet_db?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(mysqlDns), &gorm.Config{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	db.AutoMigrate(&biz.UserWallet{})
+	userWallet := biz.UserWallet{
+		UserID:        0,
+		WalletType:    0,
+		PublicKey:     pubKey,
+		PrivateKey:    privateKey,
+		WalletAddress: pubKey,
+		Mnemonic:      mnemonic,
+		UserName:      "root",
+	}
+	err = db.Create(&userWallet).Error
+	if err != nil {
+		t.Fatal(err)
+	}
 }
