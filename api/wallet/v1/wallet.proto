@@ -2,9 +2,9 @@ syntax = "proto3";
 
 package wallet.v1;
 
-import "google/api/annotations.proto";
+import "third_party/google/api/annotations.proto";
+import "third_party/validate/validate.proto";
 
-import "validate/validate.proto";
 option go_package = "solana_aggregate/api/wallet/v1;v1";
 option java_multiple_files = true;
 option java_package = "wallet.v1";
@@ -51,11 +51,11 @@ message TransferRequest {
 }
 
 message TransferResponse {
-  // 交易hash
+  // 易hash
   string hash = 1;
 }
 
-// 转账回调
+// 账回调
 message TransferCallback {
   // 请求id
   string request_id = 1;

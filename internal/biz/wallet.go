@@ -149,7 +149,7 @@ func (u *WalletUsecase) GetTokenMintAdress(ctx context.Context, token string) (s
 		return "", err
 	}
 	if cnt == 0 {
-		return "", errors.New("cant find token mint adress")
+		return "", errors.New("cant find token mint address")
 	}
 	return res[0].Address, nil
 }
@@ -304,60 +304,114 @@ type TransactionRequest struct {
 }
 
 func (s *WalletUsecase) SendTokenTransaction(ctx context.Context, req TransactionRequest) (string, error) {
-	rpcCli := s.Repo.GetRpcSolCli()
-	// Create the sender's keypair from the private key
-	senderKeypair, err := solana.PrivateKeyFromBase58(req.FromPrivateKey)
-	if err != nil {
-		return "", err
-		// log.Fatalf("failed to create sender keypair: %v", err)
+	client := s.Repo.GetRpcSolCli()
+	// Set up keys and addresses
+	senderPrivateKey := solana.MustPrivateKeyFromBase58(req.FromPrivateKey)
+	senderPublicKey := senderPrivateKey.PublicKey()
+	mintAddress := solana.MustPublicKeyFromBase58(req.TokenMintAdress)
+	recipientAddress := solana.MustPublicKeyFromBase58(req.ToAddress)
+
+	// Validate mint account
+	mintInfo, err := client.GetAccountInfo(ctx, mintAddress)
+	if err != nil || mintInfo == nil {
+		return "", fmt.Errorf("invalid mint address or mint account not found: %v", err)
 	}
-	// Create the recipient public key
-	recipientPubKey, err := solana.PublicKeyFromBase58(req.ToAddress)
+
+	// Find and validate sender ATA
+	senderATA, _, err := solana.FindAssociatedTokenAddress(
+		senderPublicKey,
+		mintAddress,
+	)
 	if err != nil {
-		log.Fatalf("failed to create recipient public key: %v", err)
-		return "", err
+		return "", fmt.Errorf("error finding sender ata: %v", err)
 	}
-	// Create the  token mint address
-	tokenMintAdress := solana.MustPublicKeyFromBase58(req.TokenMintAdress)
-	// Create the token transfer instruction
-	transferInstruction := token.NewTransferInstruction(
-		req.Amount,
-		senderKeypair.PublicKey(),
-		recipientPubKey,
-		tokenMintAdress,
+	// Get and validate sender token account
+	senderAccInfo, err := client.GetAccountInfo(ctx, senderATA)
+	if err != nil || senderAccInfo == nil {
+		return "", fmt.Errorf("sender token account not found or invalid: %v", err)
+	}
+
+	// Find and validate recipient ATA
+	recipientATA, _, err := solana.FindAssociatedTokenAddress(
+		recipientAddress,
+		mintAddress,
+	)
+	if err != nil {
+		return "", fmt.Errorf("error finding recipient ata: %v", err)
+	}
+
+	// Get and validate recipient token account
+	recipientAccInfo, err := client.GetAccountInfo(ctx, recipientATA)
+	if err != nil || recipientAccInfo == nil {
+		return "", fmt.Errorf("recipient token account not found. It needs to be created first")
+	}
+
+	// Get token mint info for decimals
+	mintAccInfo, err := client.GetTokenSupply(ctx, mintAddress, rpc.CommitmentFinalized)
+	if err != nil {
+		return "", fmt.Errorf("error getting token mint info: %v", err)
+	}
+	decimals := mintAccInfo.Value.Decimals
+	// Create transfer instruction
+	transferAmount := req.Amount
+
+	transferIx := token.NewTransferCheckedInstruction(
+		transferAmount,
+		decimals,
+		senderATA,
+		mintAddress,
+		recipientATA,
+		senderPublicKey,
 		[]solana.PublicKey{},
 	).Build()
 
-	recent, err := rpcCli.GetRecentBlockhash(ctx, req.Commitment)
-	if err != nil {
-		return "", fmt.Errorf("failed to get recent blockhash: %w", err)
-	}
-	// Create a transaction
-	tx, err := solana.NewTransaction(
-		[]solana.Instruction{transferInstruction},
-		recent.Value.Blockhash,
-		solana.TransactionPayer(senderKeypair.PublicKey()),
-	)
-	if err != nil {
-		log.Fatalf("failed to create transaction: %v", err)
+	// Print instruction accounts for debugging
+	fmt.Printf("Transfer instruction accounts:\n")
+	for i, acc := range transferIx.Accounts() {
+		fmt.Printf("Account %d: %s (is_signer: %v, is_writable: %v)\n",
+			i, acc.PublicKey, acc.IsSigner, acc.IsWritable)
 	}
 
-	// Sign the transaction
+	recent, err := client.GetLatestBlockhash(ctx, rpc.CommitmentFinalized)
+	if err != nil {
+		log.Fatalf("Error getting recent blockhash: %v", err)
+	}
+
+	tx, err := solana.NewTransaction(
+		[]solana.Instruction{transferIx},
+		recent.Value.Blockhash,
+		solana.TransactionPayer(senderPublicKey),
+	)
+	if err != nil {
+		log.Fatalf("Error creating transaction: %v", err)
+	}
+
 	_, err = tx.Sign(func(key solana.PublicKey) *solana.PrivateKey {
-		if key.Equals(senderKeypair.PublicKey()) {
-			return &senderKeypair
+		if key.Equals(senderPublicKey) {
+			return &senderPrivateKey
 		}
 		return nil
 	})
 	if err != nil {
-		return "", fmt.Errorf("failed to sign transaction: %v", err)
+		log.Fatalf("Error signing transaction: %v", err)
 	}
-	// Send the transaction
-	signature, err := rpcCli.SendTransaction(context.Background(), tx)
+
+	// Simulate transaction first
+	sim, err := client.SimulateTransaction(ctx, tx)
 	if err != nil {
-		log.Fatalf("failed to send transaction: %v", err)
+		return "", fmt.Errorf("simulation error: %v", err)
 	}
-	return signature.String(), nil
+	if sim.Value.Err != nil {
+		return "", fmt.Errorf("simulation showed error: %v", sim.Value.Err)
+	}
+
+	// Send transaction
+	sig, err := client.SendTransaction(ctx, tx)
+	if err != nil {
+		return "", fmt.Errorf("error sending transaction: %v", err)
+	}
+
+	return sig.String(), nil
 }
 
 // SendTransaction sends SOL from one account to another
@@ -387,7 +441,7 @@ func (s *WalletUsecase) SendSolanaTransaction(ctx context.Context, req Transacti
 	}
 
 	// Get recent blockhash
-	recent, err := rpcCli.GetRecentBlockhash(ctx, req.Commitment)
+	recent, err := rpcCli.GetLatestBlockhash(ctx, req.Commitment)
 	if err != nil {
 		return "", fmt.Errorf("failed to get recent blockhash: %w", err)
 	}
